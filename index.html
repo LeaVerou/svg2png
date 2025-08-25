@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Local SVG to PNG converter</title>
+	<script src="index.js" type="module"></script>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+	<h1>Local SVG to PNG converter</h1>
+</header>
+
+<section id="settings">
+	<h2>Settings</h2>
+	<label>SVG file: <input type="file" id="file_input" accept="image/svg+xml"></label>
+
+	<fieldset>
+		<legend>Dimensions:</legend>
+		<label><input id="w" type="number" min="1"></label>
+		&times; <label><input id="h" type="number" min="1"></label>
+		<label><input type="number" id="padding_input" min="0"></label>
+	</fieldset>
+
+</section>
+
+
+<section id="preview">
+	<h2>Preview
+		<a href="" download id="download_link">Download</a>
+	</h2>
+	<img id="img" src="" alt="SVG image">
+	<canvas id=canvas>
+
+	</canvas>
+	<img id="png_img" src="" alt="PNG image">
+</section>
+
+</body>
+</html>
