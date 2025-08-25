@@ -105,14 +105,18 @@ function paint() {
 
 
 	canvas.toBlob(blob => {
-		if (png) {
-			URL.revokeObjectURL(png);
-		}
-
 		if (blob) {
+			let previous = png;
+
 			png = URL.createObjectURL(blob);
 			png_img.src = png;
 			download_link.href = png;
+
+			if (previous) {
+				requestAnimationFrame(() => {
+					URL.revokeObjectURL(previous);
+				});
+			}
 		}
 	}, 'image/png');
 }

@@ -3,3 +3,7 @@ body {
 	padding: 1em 2em;
 	margin: 0;
 }
+
+img, canvas {
+	box-shadow: 0 0 3px -2px black;
+}
