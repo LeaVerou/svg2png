@@ -53,9 +53,16 @@ w.oninput = h.oninput = padding_input.oninput = evt => {
 			forceWidth = Number(forceWidth);
 			img.style.width = forceWidth + 'px';
 		}
+		else {
+			img.style.width = '';
+		}
+
 		if (forceHeight) {
 			forceHeight = Number(forceHeight);
 			img.style.height = forceHeight + 'px';
+		}
+		else {
+			img.style.height = '';
 		}
 	}
 
@@ -95,11 +102,13 @@ function paint() {
 	});
 	ctx.drawImage(img, padding, padding, width - padding * 2, height - padding * 2);
 
-	if (png) {
-		URL.revokeObjectURL(png);
-	}
+
 
 	canvas.toBlob(blob => {
+		if (png) {
+			URL.revokeObjectURL(png);
+		}
+
 		if (blob) {
 			png = URL.createObjectURL(blob);
 			png_img.src = png;
