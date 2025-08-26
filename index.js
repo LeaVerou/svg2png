@@ -58,7 +58,7 @@ file_input.onchange = evt => {
 }
 
 img.onload = async () => {
-	// await img.decode();
+	await img.decode();
 
 	state.naturalWidth = img.naturalWidth;
 	state.naturalHeight = img.naturalHeight;
