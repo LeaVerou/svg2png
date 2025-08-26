@@ -1,116 +1,142 @@
-let url;
-let width, height;
-let naturalWidth, naturalHeight, aspectRatio;
+/**
+ * This code is a quick hack because I needed to convert a SVG to a PNG in a way that actually supports modern stuff.
+ * Do not use this code as a reference for anything.
+ */
+
+let state = {
+	naturalWidth: undefined, naturalHeight: undefined,
+	forceWidth: undefined, forceHeight: undefined,
+	padding: 0,
+
+	get width () {
+		if (this.forceWidth) {
+			return this.forceWidth;
+		}
+		else if (this.forceHeight) {
+			return this.forceHeight * this.aspectRatio;
+		}
+		else {
+			return this.naturalWidth;
+		}
+	},
+
+	get height () {
+		if (this.forceHeight) {
+			return this.forceHeight;
+		}
+		else if (this.forceWidth) {
+			return this.forceWidth / this.aspectRatio;
+		}
+		else {
+			return this.naturalHeight;
+		}
+	},
+
+	get aspectRatio() {
+		return this.naturalWidth / this.naturalHeight;
+	},
+
+	get paintCoords () {
+		return {
+			x: this.padding,
+			y: this.padding,
+			width: this.width - this.padding * 2,
+			height: this.height - this.padding * 2,
+		};
+	}
+};
+
+let blobs = {
+	svg: undefined,
+	png: undefined,
+};
+
+// For debugging
+globalThis.state = state;
 
 let canvas = document.getElementById('canvas');
-let png;
 
 file_input.onchange = evt => {
 	let file = evt.target.files[0];
 	download_link.download = file.name.replace('.svg', '.png');
 
-	if (url) {
-		URL.revokeObjectURL(url);
+	if (blobs.svg) {
+		URL.revokeObjectURL(blobs.svg);
 	}
 
-	url = URL.createObjectURL(file);
-	img.src = url;
+	blobs.svg = URL.createObjectURL(file);
+	img.src = blobs.svg;
 }
 
 img.onload = async () => {
 	await img.decode();
 
-	naturalWidth = img.naturalWidth;
-	naturalHeight = img.naturalHeight;
-	aspectRatio = naturalWidth / naturalHeight;
+	state.naturalWidth = img.naturalWidth;
+	state.naturalHeight = img.naturalHeight;
 
-	w.placeholder ||= naturalWidth;
-	h.placeholder ||= naturalHeight;
+	w.placeholder ||= state.naturalWidth;
+	h.placeholder ||= state.naturalHeight;
 
 	w.oninput();
 }
 
-w.oninput = h.oninput = padding_input.oninput = evt => {
-	if (w.value) {
-		h.placeholder = Math.round(w.valueAsNumber / aspectRatio);
+w.oninput = h.oninput = evt => {
+	state.forceWidth = w.value ? Number(w.value) : undefined;
+	state.forceHeight = h.value ? Number(h.value) : undefined;
+
+	if (state.forceWidth) {
+		h.placeholder = Math.round(state.forceWidth / state.aspectRatio);
 	}
 	else {
-		h.placeholder = naturalHeight;
+		h.placeholder = state.naturalHeight;
 	}
 
-	if (h.value) {
-		w.placeholder = Math.round(h.valueAsNumber * aspectRatio);
-	}
-	else {
-		w.placeholder = naturalWidth;
-	}
-
-	let forceWidth = w.value;
-	let forceHeight = h.value;
-
-	if (forceWidth || forceHeight) {
-		if (forceWidth) {
-			forceWidth = Number(forceWidth);
-			img.style.width = forceWidth + 'px';
-		}
-		else {
-			img.style.width = '';
-		}
-
-		if (forceHeight) {
-			forceHeight = Number(forceHeight);
-			img.style.height = forceHeight + 'px';
-		}
-		else {
-			img.style.height = '';
-		}
-	}
-
-	width = undefined;
-	height = undefined;
-
-	if (forceWidth) {
-		width = forceWidth;
-
-		if (forceHeight) {
-			height = width / aspectRatio;
-		}
-	}
-	else if (forceHeight) {
-		height = forceHeight;
-		width = height * aspectRatio;
+	if (state.forceHeight) {
+		w.placeholder = Math.round(state.forceHeight * state.aspectRatio);
 	}
 	else {
-		width = naturalWidth;
-		height = naturalHeight;
+		w.placeholder = state.naturalWidth;
 	}
+
+	img.style.width = state.forceWidth ? state.forceWidth + 'px' : '';
+	img.style.height = state.forceHeight ? state.forceHeight + 'px' : '';
+
+	paint();
+}
+
+padding_input.oninput = evt => {
+	state.padding = Number(padding_input.value) || 0;
 
 	paint();
 }
 
 function paint() {
-	canvas.width = width;
-	canvas.height = height;
+	canvas.width = state.width;
+	canvas.height = state.height;
 	canvas.style.zoom = 1/devicePixelRatio;
 	png_img.style.zoom = 1/devicePixelRatio;
-
-	let padding = Number(padding_input.value) || 0;
 
 	let ctx = canvas.getContext('2d', {
 		colorSpace: "display-p3",
 		colorType: "float16",
 	});
-	ctx.drawImage(img, padding, padding, width - padding * 2, height - padding * 2);
 
+	let { x, y, width, height } = state.paintCoords;
+	ctx.drawImage(img, x, y, width, height);
 
-
+	// Canvas → PNG
 	canvas.toBlob(blob => {
 		if (blob) {
-			let previous = png;
+			let previous = blobs.png;
 
-			png = URL.createObjectURL(blob);
-			png_img.src = png;
-			download_link.href = png;
+			blobs.png = URL.createObjectURL(blob);
+			png_img.src = blobs.png;
+			download_link.href = blobs.png;
+
+			if (blobs.svg) {
+				// Is not the placeholder
+				download_link.focus();
+			}
 
 			if (previous) {
 				requestAnimationFrame(() => {

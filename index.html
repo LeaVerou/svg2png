@@ -11,31 +11,48 @@
 
 <header>
 	<h1>Local SVG to PNG converter</h1>
+	<p>Uses your browser, so all the modern stuff works. Completely private. Even works offline!</p>
 </header>
 
 <section id="settings">
 	<h2>Settings</h2>
-	<label>SVG file: <input type="file" id="file_input" accept="image/svg+xml"></label>
+
 
 	<fieldset>
-		<legend>Dimensions:</legend>
-		<label><input id="w" type="number" min="1"></label>
-		&times; <label><input id="h" type="number" min="1"></label>
-		<label><input type="number" id="padding_input" min="0"></label>
+		<legend>Resize</legend>
+		<input id="w" type="number" min="1" aria-label="Width">
+		&times;
+		<input id="h" type="number" min="1" aria-label="Height">
+		<label>Padding: <input type="number" id="padding_input" value="0"></label>
 	</fieldset>
 
 </section>
 
 
 <section id="preview">
-	<h2>Preview
-		<a href="" download id="download_link">Download</a>
-	</h2>
-	<img id="img" src="" alt="SVG image">
-	<canvas id=canvas>
+	<h2>Preview</h2>
+	<fieldset id="original">
+		<legend>Original SVG image</legend>
+		<img id="img" src="placeholder.svg" alt="SVG image">
+		<label><input type="file" id="file_input" accept="image/svg+xml" autofocus aria-label="Select SVG file"></label>
+	</fieldset>
 
-	</canvas>
-	<img id="png_img" src="" alt="PNG image">
+	<fieldset>
+		<legend>PNG image</legend>
+		<a href="" download id="download_link" title="Download PNG image"><img id="png_img" src="" alt="PNG image"></a>
+	</fieldset>
+</section>
+
+<section id="debug">
+	<h2>Debug</h2>
+	<fieldset>
+		<legend>Drawn to <code>&lt;object></code></legend>
+		<object id="object_img" data="placeholder.svg" type="image/svg+xml" alt="SVG image" inert></object>
+	</fieldset>
+	<fieldset>
+		<legend>Drawn to <code>&lt;canvas></code></legend>
+		<canvas id=canvas></canvas>
+	</fieldset>
 </section>
 
 </body>
