@@ -6,6 +6,7 @@
 let state = {
 	naturalWidth: undefined, naturalHeight: undefined,
 	forceWidth: undefined, forceHeight: undefined,
+	aspectRatio: undefined,
 	padding: 0,
 
 	get width () {
@@ -31,19 +32,6 @@ let state = {
 			return this.naturalHeight;
 		}
 	},
-
-	get aspectRatio() {
-		return this.naturalWidth / this.naturalHeight;
-	},
-
-	get paintCoords () {
-		return {
-			x: this.padding,
-			y: this.padding,
-			width: this.width - this.padding * 2,
-			height: this.height - this.padding * 2,
-		};
-	}
 };
 
 let blobs = {
@@ -66,13 +54,18 @@ file_input.onchange = evt => {
 
 	blobs.svg = URL.createObjectURL(file);
 	img.src = blobs.svg;
+	object_img.data = blobs.svg;
 }
 
 img.onload = async () => {
-	await img.decode();
+	// await img.decode();
 
 	state.naturalWidth = img.naturalWidth;
 	state.naturalHeight = img.naturalHeight;
+
+	// naturalWidth and naturalHeight are rounded, so give subtly incorrect aspect ratio
+	let rect = img.getBoundingClientRect();
+	state.aspectRatio = rect.width / rect.height;
 
 	w.placeholder ||= state.naturalWidth;
 	h.placeholder ||= state.naturalHeight;
@@ -111,18 +104,16 @@ padding_input.oninput = evt => {
 }
 
 function paint() {
-	canvas.width = state.width;
-	canvas.height = state.height;
+	canvas.width = state.width + state.padding * 2;
+	canvas.height = state.height + state.padding * 2;
 	canvas.style.zoom = 1/devicePixelRatio;
-	png_img.style.zoom = 1/devicePixelRatio;
 
 	let ctx = canvas.getContext('2d', {
 		colorSpace: "display-p3",
 		colorType: "float16",
 	});
 
-	let { x, y, width, height } = state.paintCoords;
-	ctx.drawImage(img, x, y, width, height);
+	ctx.drawImage(img, state.padding, state.padding, state.width, state.height);
 
 	// Canvas → PNG
 	canvas.toBlob(blob => {
@@ -133,7 +124,7 @@ function paint() {
 			png_img.src = blobs.png;
 			download_link.href = blobs.png;
 
-			if (blobs.svg) {
+			if (blobs.svg && (document.activeElement === document.body || document.activeElement === file_input)) {
 				// Is not the placeholder
 				download_link.focus();
 			}
