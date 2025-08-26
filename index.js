@@ -73,6 +73,10 @@ img.onload = async () => {
 	w.oninput();
 }
 
+if (img.complete) {
+	img.onload();
+}
+
 w.oninput = h.oninput = evt => {
 	state.forceWidth = w.value ? Number(w.value) : undefined;
 	state.forceHeight = h.value ? Number(h.value) : undefined;
